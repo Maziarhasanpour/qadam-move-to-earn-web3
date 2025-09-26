@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qadam - Web3 Walking App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f8fffe 0%, #f0f9f6 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(160, 218, 181, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            height: calc(100% - 80px);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .connect-wallet-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+        }
+
+        .connect-wallet-btn.connected {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d5a3d;
+        }
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #A0DAB5, #7bc99c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .step-counter {
+            width: 220px;
+            height: 220px;
+            margin: 20px auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circular-progress {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(#A0DAB5 0deg 252deg, #e8f5ea 252deg 360deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(160, 218, 181, 0.3);
+        }
+
+        .circular-progress.spinning {
+            animation: rotate 3s linear infinite;
+        }
+
+        .step-display {
+            width: 180px;
+            height: 180px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-count {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2d5a3d;
+            margin-bottom: 5px;
+        }
+
+        .step-label {
+            font-size: 14px;
+            color: #7bc99c;
+            font-weight: 500;
+        }
+
+        .daily-goal {
+            text-align: center;
+            margin: 15px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .claim-token-btn {
+            width: 100%;
+            height: 45px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            border: none;
+            border-radius: 22px;
+            color: #2d5a3d;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 15px 0 8px 0;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+        }
+
+        .claim-token-btn:disabled {
+            background: linear-gradient(135deg, #e0e0e0, #cccccc);
+            color: #999;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .claim-info {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .start-walking-btn {
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(135deg, #A0DAB5, #7bc99c);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 0 15px 0;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(160, 218, 181, 0.4);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(160, 218, 181, 0.1);
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: 700;
+            color: #A0DAB5;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .reward-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 5px 20px rgba(160, 218, 181, 0.15);
+            border: 1px solid #f0f9f6;
+        }
+
+        .reward-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .reward-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d5a3d;
+        }
+
+        .reward-amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: #A0DAB5;
+        }
+
+        .staking-section {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .staking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .staking-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .apy-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .staking-pools {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .pool-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .pool-icon {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .pool-apy {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .pool-name {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .stake-btn {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #2d5a3d;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .referral-section {
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+            color: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .referral-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .referral-code {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .referral-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+
+        .referral-stat-number {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .referral-stat-label {
+            font-size: 10px;
+            opacity: 0.9;
+        }
+
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #f0f9f6;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active {
+            background: #f0f9f6;
+            color: #A0DAB5;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        /* Social Features Styles */
+        .social-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(160, 218, 181, 0.15);
+            border: 1px solid #f0f9f6;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #2d5a3d;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .notification-badge {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        .create-btn {
+            background: linear-gradient(135deg, #A0DAB5, #7bc99c);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .chat-window {
+            background: #f9fdfb;
+            border-radius: 15px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            max-width: 85%;
+        }
+
+        .message.you {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #A0DAB5, #7bc99c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .message-avatar.me {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .message-content {
+            background: #e8f5ea;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+        }
+
+        .message.you .message-content {
+            background: #A0DAB5;
+            color: white;
+        }
+
+        .message-author {
+            font-size: 10px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .message.you .message-author {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .message-text {
+            line-height: 1.4;
+            margin-bottom: 3px;
+        }
+
+        .message-time {
+            font-size: 9px;
+            color: #999;
+        }
+
+        .message.you .message-time {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .chat-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: #f0f9f6;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .attach-btn, .send-btn {
+            background: linear-gradient(135deg, #A0DAB5, #7bc99c);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .attach-btn:hover, .send-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .challenge-preview {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .challenge-banner {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .challenge-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .challenge-subtitle {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .team-stats {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .team {
+            text-align: center;
+            flex: 1;
+        }
+
+        .team-name {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .team-progress {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .vs {
+            font-size: 14px;
+            font-weight: 700;
+            margin: 0 15px;
+        }
+
+        .live-indicator {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            animation: blink 1.5s infinite;
+        }
+
+        .activity-item {
+            background: #f9fdfb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: #2d5a3d;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .activity-participants {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .participant-count {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .join-live-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .add-friend-btn {
+            background: linear-gradient(135deg, #A0DAB5, #7bc99c);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .friends-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .friend-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f9fdfb;
+            border-radius: 12px;
+            border-left: 4px solid #e8f5ea;
+        }
+
+        .friend-item.online {
+            border-left-color: #A0DAB5;
+        }
+
+        .friend-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #A0DAB5, #7bc99c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-right: 12px;
+            position: relative;
+        }
+
+        .friend-avatar.offline {
+            background: #ccc;
+        }
+
+        .friend-avatar::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 10px;
+            height: 10px;
+            background: #27ae60;
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+
+        .friend-avatar.offline::after {
+            background: #e74c3c;
+        }
+
+        .friend-info {
+            flex: 1;
+        }
+
+        .friend-name {
+            font-weight: 600;
+            color: #2d5a3d;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .friend-status {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .friend-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .challenge-btn, .chat-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .challenge-btn {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+        }
+
+        .chat-btn {
+            background: linear-gradient(135deg, #A0DAB5, #7bc99c);
+        }
+
+        .challenge-item {
+            background: #f9fdfb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #A0DAB5;
+        }
+
+        .challenge-title {
+            font-weight: 600;
+            color: #2d5a3d;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .challenge-desc {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .challenge-progress {
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            background: #e8f5ea;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, #A0DAB5, #7bc99c);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .challenge-participants {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .participant {
+            font-size: 12px;
+            color: #2d5a3d;
+            padding: 4px 8px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .challenge-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .social-btn {
+            flex: 1;
+            background: linear-gradient(135deg, #A0DAB5, #7bc99c);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            padding: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .social-btn.secondary {
+            background: #f0f9f6;
+            color: #2d5a3d;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(160, 218, 181, 0.3);
+        }
+
+        .group-walk-item {
+            background: #f9fdfb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .walk-info {
+            flex: 1;
+        }
+
+        .walk-title {
+            font-weight: 600;
+            color: #2d5a3d;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        .walk-time {
+            color: #A0DAB5;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .walk-location {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .walk-participants {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .participant-avatars {
+            display: flex;
+            gap: -5px;
+        }
+
+        .mini-avatar {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #A0DAB5, #7bc99c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: -5px;
+            border: 2px solid white;
+        }
+
+        .join-walk-btn {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #2d5a3d;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .photo-item {
+            background: #f9fdfb;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .photo-placeholder {
+            font-size: 32px;
+            margin-bottom: 8px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e8f5ea;
+            border-radius: 8px;
+        }
+
+        .photo-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .photo-author {
+            font-size: 11px;
+            font-weight: 600;
+            color: #2d5a3d;
+        }
+
+        .photo-time {
+            font-size: 10px;
+            color: #666;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+
+        <!-- Home Screen -->
+        <div class="screen active" id="home">
+            <div class="header">
+                <div class="logo">Qadam</div>
+                <div class="header-right">
+                    <button class="connect-wallet-btn" id="connectWalletBtn" onclick="connectWallet()">
+                        🔗 Connect Wallet
+                    </button>
+                    <div class="profile-icon">A</div>
+                </div>
+            </div>
+
+            <div class="step-counter">
+                <div class="circular-progress" id="circularProgress">
+                    <div class="step-display">
+                        <div class="step-count" id="stepCount">7,284</div>
+                        <div class="step-label">steps</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="daily-goal">
+                <p>Daily Goal: 10,000 steps</p>
+                <p style="color: #A0DAB5; font-weight: 600;">73% Complete</p>
+            </div>
+
+            <button class="claim-token-btn" id="claimBtn" onclick="claimTokens()" disabled>
+                💰 Claim 15 QDM
+            </button>
+            <div class="claim-info" id="claimInfo">Need 2,716 more steps to claim 15 QDM</div>
+
+            <button class="start-walking-btn" onclick="startWalking()">
+                🚶‍♂️ Start Walking
+            </button>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">2.4</div>
+                    <div class="stat-label">km walked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">156</div>
+                    <div class="stat-label">calories</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rewards Screen -->
+        <div class="screen" id="rewards">
+            <div class="header">
+                <div class="logo">Rewards</div>
+                <div style="color: #A0DAB5; font-weight: 600;">💰</div>
+            </div>
+
+            <div class="reward-card">
+                <div class="reward-header">
+                    <div class="reward-title">Qadam Tokens (QDM)</div>
+                    <div>🪙</div>
+                </div>
+                <div class="reward-amount" id="tokenBalance">342 QDM</div>
+                <p style="color: #666; font-size: 14px; margin-top: 10px;">Earned from walking this week</p>
+            </div>
+
+            <div class="reward-card">
+                <div class="reward-header">
+                    <div class="reward-title">BSC Wallet Balance</div>
+                    <div>💎</div>
+                </div>
+                <div class="reward-amount">$6.84</div>
+                <p style="color: #666; font-size: 14px; margin-top: 10px;">Current value: $0.02 per QDM</p>
+            </div>
+
+            <div class="staking-section">
+                <div class="staking-header">
+                    <div class="staking-title">💎 Stake & Earn</div>
+                    <div class="apy-badge">Up to 25% APY</div>
+                </div>
+                <div class="staking-pools">
+                    <div class="pool-card">
+                        <div class="pool-icon">🏆</div>
+                        <div class="pool-apy">15% APY</div>
+                        <div class="pool-name">Bronze Pool</div>
+                        <button class="stake-btn" onclick="openStakeModal('bronze')">Stake</button>
+                    </div>
+                    <div class="pool-card">
+                        <div class="pool-icon">💎</div>
+                        <div class="pool-apy">25% APY</div>
+                        <div class="pool-name">Diamond Pool</div>
+                        <button class="stake-btn" onclick="openStakeModal('diamond')">Stake</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="referral-section">
+                <div class="referral-title">👥 Invite Friends & Earn</div>
+                <div class="referral-code" id="referralCode">QADAM2024X7</div>
+                <button class="copy-btn" onclick="copyReferralCode()">📋 Copy Code</button>
+                <div class="referral-stats">
+                    <div class="referral-stat">
+                        <div class="referral-stat-number">8</div>
+                        <div class="referral-stat-label">Friends Invited</div>
+                    </div>
+                    <div class="referral-stat">
+                        <div class="referral-stat-number">+80</div>
+                        <div class="referral-stat-label">Bonus QDM</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Screen -->
+        <div class="screen" id="analytics">
+            <div class="header">
+                <div class="logo">Analytics</div>
+                <div style="color: #A0DAB5; font-weight: 600;">📊</div>
+            </div>
+
+            <div class="reward-card">
+                <h3 style="color: #2d5a3d; margin-bottom: 15px;">🏆 Personal Records</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                    <div style="background: linear-gradient(135deg, #A0DAB5, #7bc99c); color: white; padding: 15px; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">15,847</div>
+                        <div style="font-size: 12px; opacity: 0.9;">Best Day</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #A0DAB5, #7bc99c); color: white; padding: 15px; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">89,340</div>
+                        <div style="font-size: 12px; opacity: 0.9;">Best Week</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #A0DAB5, #7bc99c); color: white; padding: 15px; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">21</div>
+                        <div style="font-size: 12px; opacity: 0.9;">Best Streak</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #A0DAB5, #7bc99c); color: white; padding: 15px; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">342k</div>
+                        <div style="font-size: 12px; opacity: 0.9;">Total Steps</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reward-card">
+                <h3 style="color: #2d5a3d; margin-bottom: 15px;">📈 Weekly Progress</h3>
+                <canvas id="weeklyChart" width="300" height="120"></canvas>
+            </div>
+
+            <div class="reward-card">
+                <h3 style="color: #2d5a3d; margin-bottom: 15px;">📋 Recent Activity</h3>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: #f9fdfb; border-radius: 8px; font-size: 12px;">
+                        <span style="font-weight: 600; color: #2d5a3d;">Today</span>
+                        <span>8,247 steps</span>
+                        <span style="color: #A0DAB5; font-weight: 600;">82%</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: #f9fdfb; border-radius: 8px; font-size: 12px;">
+                        <span style="font-weight: 600; color: #2d5a3d;">Yesterday</span>
+                        <span>12,430 steps</span>
+                        <span style="color: #27ae60; font-weight: 600;">124%</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: #f9fdfb; border-radius: 8px; font-size: 12px;">
+                        <span style="font-weight: 600; color: #2d5a3d;">Mar 20</span>
+                        <span>9,680 steps</span>
+                        <span style="color: #A0DAB5; font-weight: 600;">97%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Social Features Screen -->
+        <div class="screen" id="social">
+            <div class="header">
+                <div class="logo">Social</div>
+                <div style="color: #A0DAB5; font-weight: 600;">👥</div>
+            </div>
+
+            <!-- Chat Section -->
+            <div class="social-card">
+                <div class="card-header">
+                    <span>💬 Community Chat</span>
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="chat-window">
+                    <div class="message friend">
+                        <div class="message-avatar">S</div>
+                        <div class="message-content">
+                            <div class="message-author">Sarah M.</div>
+                            <div class="message-text">Hey! Wanna go for a walk? 🚶‍♂️</div>
+                            <div class="message-time">2 min ago</div>
+                        </div>
+                    </div>
+                    <div class="message you">
+                        <div class="message-content">
+                            <div class="message-text">Sure! Let's do 5k today 🔥</div>
+                            <div class="message-time">1 min ago</div>
+                        </div>
+                        <div class="message-avatar me">A</div>
+                    </div>
+                    <div class="message friend">
+                        <div class="message-avatar">S</div>
+                        <div class="message-content">
+                            <div class="message-author">Sarah M.</div>
+                            <div class="message-text">Awesome! I'll share the route 📸</div>
+                            <div class="message-time">now</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Type a message..." />
+                    <button class="attach-btn" onclick="attachFile()">📎</button>
+                    <button class="send-btn" onclick="sendMessage()">➤</button>
+                </div>
+            </div>
+
+            <!-- Team Challenges Section -->
+            <div class="social-card">
+                <div class="card-header">
+                    <span>🏆 Team Challenges</span>
+                    <button class="create-btn" onclick="createTeamChallenge()">+</button>
+                </div>
+                <div class="challenge-preview">
+                    <div class="challenge-banner">
+                        <div class="challenge-title">Spring Step Challenge</div>
+                        <div class="challenge-subtitle">Team vs Team Competition</div>
+                    </div>
+                    <div class="team-stats">
+                        <div class="team green">
+                            <div class="team-name">Green Walkers</div>
+                            <div class="team-progress">47,320 steps</div>
+                        </div>
+                        <div class="vs">VS</div>
+                        <div class="team blue">
+                            <div class="team-name">Blue Runners</div>
+                            <div class="team-progress">43,180 steps</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="social-btn" onclick="createChallenge()">+ Create Challenge</button>
+                    <button class="social-btn secondary" onclick="joinChallenge()">Join Challenge</button>
+                </div>
+            </div>
+
+            <!-- Live Group Activities -->
+            <div class="social-card">
+                <div class="card-header">
+                    <span>🔴 Live Group Activities</span>
+                    <span class="live-indicator">● LIVE</span>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-info">
+                        <div class="activity-title">Morning Park Walk</div>
+                        <div class="activity-participants">
+                            <div class="participant-count">12 people walking now</div>
+                            <div class="participant-avatars">
+                                <span class="mini-avatar">S</span>
+                                <span class="mini-avatar">A</span>
+                                <span class="mini-avatar">O</span>
+                                <span class="mini-avatar">+9</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="join-live-btn" onclick="joinLiveActivity()">Join Live</button>
+                </div>
+                <button class="social-btn" onclick="scheduleWalk()">📅 Schedule New Walk</button>
+            </div>
+
+            <!-- Photo Sharing -->
+            <div class="social-card">
+                <div class="card-header">
+                    <span>📸 Recent Photos</span>
+                </div>
+                <div class="photo-grid">
+                    <div class="photo-item">
+                        <div class="photo-placeholder">🌅</div>
+                        <div class="photo-info">
+                            <span class="photo-author">Sarah M.</span>
+                            <span class="photo-time">2h ago</span>
+                        </div>
+                    </div>
+                    <div class="photo-item">
+                        <div class="photo-placeholder">🏞️</div>
+                        <div class="photo-info">
+                            <span class="photo-author">Ahmed K.</span>
+                            <span class="photo-time">4h ago</span>
+                        </div>
+                    </div>
+                    <div class="photo-item">
+                        <div class="photo-placeholder">🌸</div>
+                        <div class="photo-info">
+                            <span class="photo-author">You</span>
+                            <span class="photo-time">1d ago</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="social-btn" onclick="sharePhoto()">📷 Share Photo</button>
+            </div>
+        </div>
+        <div class="screen" id="leaderboard">
+            <div class="header">
+                <div class="logo">Leaderboard</div>
+                <div style="color: #A0DAB5; font-weight: 600;">🏅</div>
+            </div>
+
+            <div class="reward-card">
+                <h3 style="color: #2d5a3d; margin-bottom: 20px;">Top Walkers This Week</h3>
+                
+                <div style="display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f9f6;">
+                    <div style="width: 30px; height: 30px; background: linear-gradient(135deg, #A0DAB5, #7bc99c); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; margin-right: 15px;">1</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #2d5a3d;">Ahmed K.</div>
+                        <div style="color: #7bc99c; font-size: 14px;">89,450 steps</div>
+                    </div>
+                    <div style="color: #A0DAB5; font-weight: 600;">👑</div>
+                </div>
+
+                <div style="display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f9f6;">
+                    <div style="width: 30px; height: 30px; background: linear-gradient(135deg, #A0DAB5, #7bc99c); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; margin-right: 15px;">2</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #2d5a3d;">Sarah M.</div>
+                        <div style="color: #7bc99c; font-size: 14px;">76,230 steps</div>
+                    </div>
+                    <div style="color: #A0DAB5; font-weight: 600;">🥈</div>
+                </div>
+
+                <div style="display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f9f6;">
+                    <div style="width: 30px; height: 30px; background: linear-gradient(135deg, #A0DAB5, #7bc99c); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; margin-right: 15px;">3</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #2d5a3d;">Omar R.</div>
+                        <div style="color: #7bc99c; font-size: 14px;">68,890 steps</div>
+                    </div>
+                    <div style="color: #A0DAB5; font-weight: 600;">🥉</div>
+                </div>
+
+                <div style="display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f9f6;">
+                    <div style="width: 30px; height: 30px; background: linear-gradient(135deg, #A0DAB5, #7bc99c); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; margin-right: 15px;">4</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #2d5a3d;">You</div>
+                        <div style="color: #7bc99c; font-size: 14px;">45,230 steps</div>
+                    </div>
+                    <div style="color: #A0DAB5; font-weight: 600;">⭐</div>
+                </div>
+
+                <div style="display: flex; align-items: center; padding: 12px 0;">
+                    <div style="width: 30px; height: 30px; background: linear-gradient(135deg, #A0DAB5, #7bc99c); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; margin-right: 15px;">5</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #2d5a3d;">Fatima A.</div>
+                        <div style="color: #7bc99c; font-size: 14px;">42,100 steps</div>
+                    </div>
+                    <div style="color: #A0DAB5; font-weight: 600;">🌟</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="showScreen('home')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Home</div>
+            </div>
+            <div class="nav-item" onclick="showScreen('social')">
+                <div class="nav-icon">👥</div>
+                <div class="nav-label">Social</div>
+            </div>
+            <div class="nav-item" onclick="showScreen('rewards')">
+                <div class="nav-icon">💰</div>
+                <div class="nav-label">Rewards</div>
+            </div>
+            <div class="nav-item" onclick="showScreen('analytics')">
+                <div class="nav-icon">📊</div>
+                <div class="nav-label">Analytics</div>
+            </div>
+            <div class="nav-item" onclick="showScreen('leaderboard')">
+                <div class="nav-icon">🏅</div>
+                <div class="nav-label">Leaders</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stepCount = 7284;
+        let isWalking = false;
+        let isWalletConnected = false;
+        let tokenBalance = 342;
+        const minStepsForClaim = 10000;
+        const tokensPerClaim = 15;
+        const tokenPrice = 0.02; // $0.02 per token
+        const referralBonus = 10; // 10 tokens per referral
+
+        function updateTokenBalance() {
+            document.getElementById('tokenBalance').textContent = `${tokenBalance.toLocaleString()} QDM`;
+        }
+
+        function openStakeModal(poolType) {
+            const poolDetails = {
+                bronze: { apy: 15, minStake: 100 },
+                diamond: { apy: 25, minStake: 500 }
+            };
+            
+            const pool = poolDetails[poolType];
+            const stakeAmount = prompt(`Stake in ${poolType} pool (${pool.apy}% APY)\nMinimum: ${pool.minStake} QDM\n\nEnter amount:`);
+            
+            if (stakeAmount && parseInt(stakeAmount) >= pool.minStake && parseInt(stakeAmount) <= tokenBalance) {
+                const amount = parseInt(stakeAmount);
+                tokenBalance -= amount;
+                updateTokenBalance();
+                alert(`✅ Successfully staked ${amount} QDM in ${poolType} pool!\nAPY: ${pool.apy}%`);
+            } else if (stakeAmount) {
+                alert(`❌ Invalid amount. Minimum: ${pool.minStake} QDM, Available: ${tokenBalance} QDM`);
+            }
+        }
+
+        function copyReferralCode() {
+            const code = document.getElementById('referralCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('📋 Referral code copied!\nShare with friends to earn 40 QDM per referral!');
+            }).catch(() => {
+                alert(`📋 Your referral code: ${code}\nShare with friends to earn 40 QDM per referral!`);
+            });
+        }
+
+        function updateClaimButton() {
+            const claimBtn = document.getElementById('claimBtn');
+            const claimInfo = document.getElementById('claimInfo');
+            
+            if (stepCount >= minStepsForClaim) {
+                claimBtn.disabled = false;
+                claimInfo.textContent = 'Ready to claim tokens!';
+            } else {
+                claimBtn.disabled = true;
+                const remaining = minStepsForClaim - stepCount;
+                claimInfo.textContent = `Need ${remaining.toLocaleString()} more steps to claim`;
+            }
+        }
+
+        function claimTokens() {
+            if (stepCount >= minStepsForClaim) {
+                const bonusTokens = 50;
+                tokenBalance += bonusTokens;
+                updateTokenBalance();
+                alert('🎉 Tokens claimed successfully!\n+50 QDM added to your wallet');
+                stepCount = 0;
+                document.getElementById('stepCount').textContent = stepCount.toLocaleString();
+                updateClaimButton();
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const progress = Math.min((stepCount / minStepsForClaim) * 100, 100);
+            document.querySelector('.daily-goal p:last-child').textContent = `${Math.floor(progress)}% Complete`;
+            
+            const degrees = (progress / 100) * 360;
+            document.querySelector('.circular-progress').style.background = 
+                `conic-gradient(#A0DAB5 0deg ${degrees}deg, #e8f5ea ${degrees}deg 360deg)`;
+        }
+
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            document.getElementById(screenName).classList.add('active');
+            
+            event.currentTarget.classList.add('active');
+            
+            if (screenName === 'analytics') {
+                setTimeout(drawWeeklyChart, 100);
+            }
+        }
+
+        function drawWeeklyChart() {
+            const canvas = document.getElementById('weeklyChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            const weekData = [6500, 8200, 9800, 12400, 7600, 10200, 8247];
+            const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+            const maxSteps = 15000;
+            const goalLine = 10000;
+            
+            const padding = 30;
+            const chartWidth = width - 2 * padding;
+            const chartHeight = height - 2 * padding;
+            
+            const barWidth = chartWidth / weekData.length * 0.6;
+            const barSpacing = chartWidth / weekData.length;
+            
+            weekData.forEach((steps, index) => {
+                const barHeight = (steps / maxSteps) * chartHeight;
+                const x = padding + barSpacing * index + (barSpacing - barWidth) / 2;
+                const y = padding + chartHeight - barHeight;
+                
+                const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
+                if (steps >= goalLine) {
+                    gradient.addColorStop(0, '#A0DAB5');
+                    gradient.addColorStop(1, '#7bc99c');
+                } else {
+                    gradient.addColorStop(0, '#e8f5ea');
+                    gradient.addColorStop(1, '#d0e8d7');
+                }
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, y, barWidth, barHeight);
+                
+                ctx.fillStyle = '#666';
+                ctx.font = '10px Poppins';
+                ctx.textAlign = 'center';
+                ctx.fillText(days[index], x + barWidth / 2, height - 8);
+            });
+        }
+
+        function startWalking() {
+            const button = document.querySelector('.start-walking-btn');
+            const stepCountElement = document.getElementById('stepCount');
+            const circularProgress = document.getElementById('circularProgress');
+            
+            if (!isWalking) {
+                isWalking = true;
+                button.textContent = '⏸️ Pause Walking';
+                button.style.background = 'linear-gradient(135deg, #ff6b6b, #ee5a52)';
+                
+                circularProgress.classList.add('spinning');
+                
+                const walkingInterval = setInterval(() => {
+                    if (isWalking) {
+                        const newSteps = Math.floor(Math.random() * 3) + 1;
+                        stepCount += newSteps;
+                        
+                        const tokensEarned = Math.floor(newSteps * 0.1);
+                        tokenBalance += tokensEarned;
+                        
+                        stepCountElement.textContent = stepCount.toLocaleString();
+                        updateTokenBalance();
+                        updateProgress();
+                        updateClaimButton();
+                    } else {
+                        clearInterval(walkingInterval);
+                    }
+                }, 1000);
+            } else {
+                isWalking = false;
+                button.textContent = '🚶‍♂️ Start Walking';
+                button.style.background = 'linear-gradient(135deg, #A0DAB5, #7bc99c)';
+                
+                circularProgress.classList.remove('spinning');
+            }
+        }
+
+        // Initialize
+        updateClaimButton();
+        updateTokenBalance();
+
+        // Social Features Functions
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                // Add message to chat (این در اپ واقعی به سرور ارسال می‌شود)
+                const chatWindow = document.querySelector('.chat-window');
+                
+                // Create new message element
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message you';
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-text">${message}</div>
+                        <div class="message-time">now</div>
+                    </div>
+                    <div class="message-avatar me">A</div>
+                `;
+                
+                chatWindow.appendChild(messageDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+                
+                // Clear input
+                input.value = '';
+                
+                // Simulate response after 2 seconds
+                setTimeout(() => {
+                    const responseDiv = document.createElement('div');
+                    responseDiv.className = 'message friend';
+                    responseDiv.innerHTML = `
+                        <div class="message-avatar">S</div>
+                        <div class="message-content">
+                            <div class="message-author">Sarah M.</div>
+                            <div class="message-text">Great message! 👍</div>
+                            <div class="message-time">now</div>
+                        </div>
+                    `;
+                    chatWindow.appendChild(responseDiv);
+                    chatWindow.scrollTop = chatWindow.scrollHeight;
+                }, 2000);
+            }
+        }
+
+        function attachFile() {
+            alert('📎 File attachment\n\nYou can share:\n• Photos from your walks\n• Route screenshots\n• Achievement badges\n\nFeature coming soon!');
+        }
+
+        function createTeamChallenge() {
+            const challengeName = prompt('Team Challenge Name:');
+            if (challengeName) {
+                alert(`🏆 Team Challenge "${challengeName}" created!\n\nInvite friends to form teams and compete!\nSet goals, track progress, and win rewards together.`);
+            }
+        }
+
+        function joinLiveActivity() {
+            alert('🔴 Joining Live Activity!\n\n"Morning Park Walk" - 12 people\n\nYou can now:\n• See live locations of participants\n• Chat with group members\n• Share photos in real-time\n• Earn bonus tokens for group activity\n\nHappy walking!');
+        }
+
+        function addFriend() {
+            const friendName = prompt('Enter friend\'s username or invite code:');
+            if (friendName) {
+                alert(`Friend request sent to ${friendName}!\nThey will receive a notification to accept your request.`);
+            }
+        }
+
+        function challengeFriend(friendName) {
+            const challenges = [
+                '10k steps in 24 hours',
+                '5k run challenge', 
+                'Weekend warrior (50k steps)',
+                'Early bird walk (before 8 AM)'
+            ];
+            
+            const challenge = challenges[Math.floor(Math.random() * challenges.length)];
+            alert(`Challenge sent to ${friendName}!\nChallenge: ${challenge}\n\nWaiting for their response...`);
+        }
+
+        function openChat(friendName) {
+            alert(`Opening chat with ${friendName}...\n\nChat feature coming soon!\nYou can send messages, share routes, and motivate each other.`);
+        }
+
+        function createChallenge() {
+            const challengeName = prompt('Challenge name:');
+            if (challengeName) {
+                const challengeGoal = prompt('Challenge goal (e.g., 50k steps in 3 days):');
+                if (challengeGoal) {
+                    alert(`Challenge "${challengeName}" created!\nGoal: ${challengeGoal}\n\nInvite friends to join your challenge!`);
+                }
+            }
+        }
+
+        function joinChallenge() {
+            const availableChallenges = [
+                'Spring Fitness Challenge - 100k steps this week',
+                'Morning Warriors - Walk before 9 AM for 7 days', 
+                'Step Masters - 15k+ steps daily for 5 days',
+                'Weekend Hikers - 2 long walks this weekend'
+            ];
+            
+            const randomChallenge = availableChallenges[Math.floor(Math.random() * availableChallenges.length)];
+            alert(`Joined challenge!\n\n${randomChallenge}\n\nGood luck! Start walking to contribute to the challenge.`);
+        }
+
+        function scheduleWalk() {
+            alert(`Schedule Group Walk\n\nChoose date, time, and location.\nInvite friends and set a meeting point.\n\nFeature coming soon!`);
+        }
+
+        function joinWalk() {
+            alert(`Joined "Morning Park Walk"!\n\nDate: Tomorrow 8:00 AM\nLocation: Central Park\nParticipants: 5 people\n\nSee you there!`);
+        }
+
+        function sharePhoto() {
+            alert(`Share your walking photos!\n\nCapture beautiful moments during your walks and inspire your friends.\n\nCamera feature coming soon!`);
+        }
+
+        // Add hover effects and Enter key support
+        document.querySelectorAll('.reward-card, .nav-item, .pool-card').forEach(element => {
+            element.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.transition = 'transform 0.3s ease';
+            });
+            
+            element.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Enter key support for chat
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) {
+                chatInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
